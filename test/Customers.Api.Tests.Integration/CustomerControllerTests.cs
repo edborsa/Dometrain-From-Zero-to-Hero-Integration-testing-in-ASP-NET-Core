@@ -3,14 +3,13 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Customers.Api.Tests.Integration;
 
-public class CustomerControllerTests
+public class CustomerControllerTests : IClassFixture<WebApplicationFactory<IAPIMarker>>
 {
-    private readonly WebApplicationFactory<IAPIMarker> _appFactory = new();
     private readonly HttpClient _httpClient;
 
-    public CustomerControllerTests()
+    public CustomerControllerTests(WebApplicationFactory<IAPIMarker> appFactory)
     {
-        _httpClient = _appFactory.CreateClient();
+        _httpClient = appFactory.CreateClient();
     }
 
     [Fact]
