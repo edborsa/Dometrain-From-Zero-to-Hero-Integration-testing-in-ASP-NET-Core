@@ -2,10 +2,10 @@ using System.Net;
 
 namespace Customers.Api.Tests.Integration;
 
-public class IntegrationTest
+public class CustomerControllerTests
 {
     [Fact]
-    public async Task Test()
+    public async Task Customer_Returns_NotFound_When_Customer_Does_NOT_Exists()
     {
         var httpClient = new HttpClient
         {
