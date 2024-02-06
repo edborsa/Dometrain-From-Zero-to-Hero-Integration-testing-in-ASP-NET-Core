@@ -1,5 +1,7 @@
 using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Customers.Api.Tests.Integration;
@@ -18,7 +20,9 @@ public class CustomerControllerTests : IClassFixture<WebApplicationFactory<IAPIM
     {
         var response = await _httpClient.GetAsync($"customers/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        var text = await response.Content.ReadAsStringAsync();
-        text.Should().Contain("404");
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        problem!.Title.Should().Be("Not Found");
+        problem!.Status.Should().Be(404);
+
     }
 }
