@@ -5,6 +5,7 @@ using Customers.Api.Contracts.Requests;
 using Customers.Api.Contracts.Responses;
 using DotNet.Testcontainers.Builders;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Testcontainers.PostgreSql;
 
@@ -37,5 +38,20 @@ public class CreateCustomerControllerTests : IClassFixture<CustomerApiFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         response.Headers.Location!.ToString().Should()
             .Be($"http://localhost/customers/{customerResponse!.Id}");
+    }
+    
+    [Fact]
+    public async Task Create_ReturnsValidationError_WhenEmailIsInvalid()
+    {
+        const string invalidEmail = "asdfasfs";
+        var customer = _customerGenerator.Clone().RuleFor(x => x.Email, invalidEmail ).Generate();
+        
+        var response = await _client.PostAsJsonAsync("customers", customer);
+        
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        error!.Status.Should().Be(400);
+        error!.Title.Should().Be("One or more validation errors occurred.");
+        error!.Errors["Email"][0].Should().Be($"{invalidEmail} is not a valid email address");
     }
 }
