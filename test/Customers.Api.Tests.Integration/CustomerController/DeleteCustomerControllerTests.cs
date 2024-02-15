@@ -35,15 +35,12 @@ public class DeleteCustomerControllerTests : IClassFixture<CustomerApiFactory>
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    // [Fact]
-    // public async Task Get_ReturnsNotFound_WhenCustomerDoesNotExists()
-    // {
-    //     // Arrange
-    //     var customer = _customerGenerator.Generate();
-    //     // Act
-    //     var getResponse = await _client.GetAsync($"customers/{Guid.NewGuid()}");
-    //     // Assert
-    //     var getCustomerResponse = await getResponse.Content.ReadFromJsonAsync<CustomerResponse>();
-    //     getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    // }
+    [Fact]
+    public async Task Delete_ReturnsNotFound_WhenCustomerDoesNotExists()
+    {
+        // Act
+        var getResponse = await _client.DeleteAsync($"customers/{Guid.NewGuid()}");
+        // Assert
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }
