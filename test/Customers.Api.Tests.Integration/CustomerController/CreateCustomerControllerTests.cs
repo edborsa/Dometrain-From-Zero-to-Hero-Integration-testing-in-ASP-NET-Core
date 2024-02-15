@@ -54,4 +54,19 @@ public class CreateCustomerControllerTests : IClassFixture<CustomerApiFactory>
         error!.Title.Should().Be("One or more validation errors occurred.");
         error!.Errors["Email"][0].Should().Be($"{invalidEmail} is not a valid email address");
     }
+    
+    [Fact]
+    public async Task Create_ReturnsValidationError_WhenGitHubUserDoesNotExists()
+    {
+        const string invalidGitHubUser = "asdfasfs";
+        var customer = _customerGenerator.Clone().RuleFor(x => x.GitHubUsername, invalidGitHubUser ).Generate();
+        
+        var response = await _client.PostAsJsonAsync("customers", customer);
+        
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        error!.Status.Should().Be(400);
+        error!.Title.Should().Be("One or more validation errors occurred.");
+        error!.Errors["Customer"][0].Should().Be($"There is no GitHub user with username {invalidGitHubUser}");
+    }
 }
