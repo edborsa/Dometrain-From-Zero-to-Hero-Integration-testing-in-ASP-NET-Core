@@ -47,11 +47,11 @@ public class UpdateCustomerControllerTests : IClassFixture<CustomerApiFactory>
         var customer = _customerGenerator.Generate();
         var createdResponse = await _client.PostAsJsonAsync("customers", customer);
         var customerCreated = await createdResponse.Content.ReadFromJsonAsync<CustomerResponse>();
-        // ACT
         const string invalidEmail = "asdfasfs";
         customer = _customerGenerator.Clone().RuleFor(x => x.Email, invalidEmail).Generate();
-        // ASSERT
+        // ACT
         var updateResponse = await _client.PutAsJsonAsync($"customers/{customerCreated!.Id}", customer);
+        // ASSERT
         updateResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var error = await updateResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         error!.Status.Should().Be(400);
@@ -59,18 +59,22 @@ public class UpdateCustomerControllerTests : IClassFixture<CustomerApiFactory>
         error!.Errors["Email"][0].Should().Be($"{invalidEmail} is not a valid email address");
     }
 
-    // [Fact]
-    // public async Task Create_ReturnsValidationError_WhenGitHubUserDoesNotExists()
-    // {
-    //     const string invalidGitHubUser = "asdfasfs";
-    //     var customer = _customerGenerator.Clone().RuleFor(x => x.GitHubUsername, invalidGitHubUser).Generate();
-    //
-    //     var response = await _client.PostAsJsonAsync("customers", customer);
-    //
-    //     response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    //     var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-    //     error!.Status.Should().Be(400);
-    //     error!.Title.Should().Be("One or more validation errors occurred.");
-    //     error!.Errors["Customer"][0].Should().Be($"There is no GitHub user with username {invalidGitHubUser}");
-    // }
+    [Fact]
+    public async Task Update_ReturnsValidationError_WhenGitHubUserDoesNotExists()
+    {
+        // ARRANGE
+        var customer = _customerGenerator.Generate();
+        var createdResponse = await _client.PostAsJsonAsync("customers", customer);
+        var customerCreated = await createdResponse.Content.ReadFromJsonAsync<CustomerResponse>();
+        const string invalidGitHubUser = "asdfasfs";
+        customer = _customerGenerator.Clone().RuleFor(x => x.GitHubUsername, invalidGitHubUser).Generate();
+        // ACT
+        var response = await _client.PutAsJsonAsync($"customers/{customerCreated!.Id}", customer);
+        // ASSERT
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        error!.Status.Should().Be(400);
+        error!.Title.Should().Be("One or more validation errors occurred.");
+        error!.Errors["Customer"][0].Should().Be($"There is no GitHub user with username {invalidGitHubUser}");
+    }
 }
